@@ -1,0 +1,42 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Foolproof Windows Cleaning App Logo</title>
+  <desc id="desc">A blue shield with Windows-style panes, a green checkmark, and cleaning sparkle accents.</desc>
+  <defs>
+    <linearGradient id="bg" x1="128" y1="64" x2="896" y2="960" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAF7FF"/>
+      <stop offset="1" stop-color="#CFE8FF"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="256" y1="144" x2="768" y2="892" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1895FF"/>
+      <stop offset="1" stop-color="#0057B8"/>
+    </linearGradient>
+    <linearGradient id="pane" x1="312" y1="292" x2="708" y2="596" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#D9F1FF" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="shadow" x="96" y="80" width="832" height="896" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#073A73" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <path d="M512 116C623 190 724 211 812 221V481C812 673 699 807 512 902C325 807 212 673 212 481V221C300 211 401 190 512 116Z" fill="url(#shield)"/>
+    <path d="M512 116C623 190 724 211 812 221V481C812 673 699 807 512 902C325 807 212 673 212 481V221C300 211 401 190 512 116Z" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="22"/>
+  </g>
+  <g opacity="0.98">
+    <path d="M318 302L494 278V454H318V302Z" fill="url(#pane)"/>
+    <path d="M530 273L714 248V454H530V273Z" fill="url(#pane)"/>
+    <path d="M318 490H494V674L318 650V490Z" fill="url(#pane)"/>
+    <path d="M530 490H714V700L530 676V490Z" fill="url(#pane)"/>
+  </g>
+  <path d="M283 713C428 669 553 602 656 512" stroke="#9BE7FF" stroke-width="34" stroke-linecap="round" opacity="0.75"/>
+  <path d="M624 688L754 548" stroke="#183B63" stroke-opacity="0.22" stroke-width="86" stroke-linecap="round"/>
+  <path d="M422 628L499 704L666 510" stroke="#35E27D" stroke-width="72" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M422 628L499 704L666 510" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+  <g fill="#FFFFFF">
+    <path d="M792 292L811 343L862 362L811 381L792 432L773 381L722 362L773 343L792 292Z" opacity="0.95"/>
+    <path d="M240 602L254 640L292 654L254 668L240 706L226 668L188 654L226 640L240 602Z" opacity="0.85"/>
+    <circle cx="746" cy="704" r="18" opacity="0.8"/>
+    <circle cx="278" cy="268" r="14" opacity="0.7"/>
+  </g>
+</svg>
