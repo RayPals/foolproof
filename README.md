@@ -1,7 +1,7 @@
 # Foolproof
 
 <p align="center">
-  <img src="assets/foolproof-logo.png" alt="Foolproof logo: blue Windows shield with a clean checkmark" width="220">
+  <img src="assets/foolproof-logo.png" alt="Foolproof logo: feather duster sweeping sparkles across a blue shield" width="220">
 </p>
 
 **Foolproof** is a one-click maintenance app for Windows.
@@ -18,7 +18,7 @@
 The project logo is available in two formats:
 
 - `assets/foolproof-logo.png` — 1024×1024 PNG for GitHub, releases, and app metadata
-- `assets/foolproof-logo.svg` — editable vector source
+- `assets/foolproof-logo.svg` — editable vector source with the feather-duster design
 
 ## License
 

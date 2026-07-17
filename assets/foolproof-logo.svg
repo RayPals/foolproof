@@ -1,21 +1,22 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Foolproof Windows Cleaning App Logo</title>
-  <desc id="desc">A blue shield with Windows-style panes, a green checkmark, and cleaning sparkle accents.</desc>
+  <title id="title">Foolproof Feather Duster Logo</title>
+  <desc id="desc">A friendly Windows cleaning app logo with a feather duster sweeping sparkles across a blue shield.</desc>
   <defs>
     <linearGradient id="bg" x1="128" y1="64" x2="896" y2="960" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#EAF7FF"/>
-      <stop offset="1" stop-color="#CFE8FF"/>
+      <stop stop-color="#F1FBFF"/>
+      <stop offset="1" stop-color="#D8ECFF"/>
     </linearGradient>
-    <linearGradient id="shield" x1="256" y1="144" x2="768" y2="892" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#1895FF"/>
-      <stop offset="1" stop-color="#0057B8"/>
+    <linearGradient id="shield" x1="256" y1="142" x2="768" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1FA4FF"/>
+      <stop offset="1" stop-color="#0759B8"/>
     </linearGradient>
-    <linearGradient id="pane" x1="312" y1="292" x2="708" y2="596" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#D9F1FF" stop-opacity="0.9"/>
+    <linearGradient id="handle" x1="266" y1="770" x2="668" y2="364" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B4A20"/>
+      <stop offset="0.55" stop-color="#D7903E"/>
+      <stop offset="1" stop-color="#FFE0A3"/>
     </linearGradient>
-    <filter id="shadow" x="96" y="80" width="832" height="896" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#073A73" flood-opacity="0.24"/>
+    <filter id="shadow" x="80" y="72" width="864" height="920" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="34" flood-color="#073A73" flood-opacity="0.24"/>
     </filter>
   </defs>
   <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
@@ -23,20 +24,27 @@
     <path d="M512 116C623 190 724 211 812 221V481C812 673 699 807 512 902C325 807 212 673 212 481V221C300 211 401 190 512 116Z" fill="url(#shield)"/>
     <path d="M512 116C623 190 724 211 812 221V481C812 673 699 807 512 902C325 807 212 673 212 481V221C300 211 401 190 512 116Z" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="22"/>
   </g>
-  <g opacity="0.98">
-    <path d="M318 302L494 278V454H318V302Z" fill="url(#pane)"/>
-    <path d="M530 273L714 248V454H530V273Z" fill="url(#pane)"/>
-    <path d="M318 490H494V674L318 650V490Z" fill="url(#pane)"/>
-    <path d="M530 490H714V700L530 676V490Z" fill="url(#pane)"/>
+  <path d="M323 733C436 683 564 598 686 457" stroke="#A7ECFF" stroke-width="38" stroke-linecap="round" opacity="0.75"/>
+  <path d="M286 761L640 407" stroke="#5B2E16" stroke-opacity="0.24" stroke-width="72" stroke-linecap="round"/>
+  <path d="M276 744L641 379" stroke="url(#handle)" stroke-width="54" stroke-linecap="round"/>
+  <path d="M584 414L642 356" stroke="#FFF0C8" stroke-width="18" stroke-linecap="round" opacity="0.85"/>
+  <g transform="rotate(-38 674 338)">
+    <path d="M571 318C612 250 666 206 731 187C700 255 651 303 571 318Z" fill="#FFF8C9"/>
+    <path d="M591 343C650 291 717 267 792 271C740 324 675 351 591 343Z" fill="#FFE176"/>
+    <path d="M592 374C666 352 737 361 807 402C730 425 658 418 592 374Z" fill="#FFB65C"/>
+    <path d="M569 403C645 414 706 451 752 514C673 501 610 463 569 403Z" fill="#FF8A50"/>
+    <path d="M545 380C597 430 621 490 620 560C560 510 535 452 545 380Z" fill="#FFD3E1"/>
+    <path d="M539 344C570 406 570 467 539 529C504 463 504 401 539 344Z" fill="#BEEFFF"/>
+    <path d="M566 322C585 390 569 452 518 507C494 433 511 371 566 322Z" fill="#E7FBFF"/>
+    <path d="M540 351C620 346 692 361 758 396" stroke="#8E6D3A" stroke-opacity="0.35" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="548" cy="356" r="42" fill="#D7903E"/>
+    <circle cx="548" cy="356" r="22" fill="#FFF0C8" opacity="0.9"/>
   </g>
-  <path d="M283 713C428 669 553 602 656 512" stroke="#9BE7FF" stroke-width="34" stroke-linecap="round" opacity="0.75"/>
-  <path d="M624 688L754 548" stroke="#183B63" stroke-opacity="0.22" stroke-width="86" stroke-linecap="round"/>
-  <path d="M422 628L499 704L666 510" stroke="#35E27D" stroke-width="72" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M422 628L499 704L666 510" stroke="#FFFFFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
   <g fill="#FFFFFF">
-    <path d="M792 292L811 343L862 362L811 381L792 432L773 381L722 362L773 343L792 292Z" opacity="0.95"/>
-    <path d="M240 602L254 640L292 654L254 668L240 706L226 668L188 654L226 640L240 602Z" opacity="0.85"/>
-    <circle cx="746" cy="704" r="18" opacity="0.8"/>
-    <circle cx="278" cy="268" r="14" opacity="0.7"/>
+    <path d="M784 266L803 317L854 336L803 355L784 406L765 355L714 336L765 317L784 266Z" opacity="0.95"/>
+    <path d="M252 564L266 602L304 616L266 630L252 668L238 630L200 616L238 602L252 564Z" opacity="0.88"/>
+    <circle cx="748" cy="690" r="17" opacity="0.8"/>
+    <circle cx="320" cy="286" r="13" opacity="0.72"/>
+    <circle cx="690" cy="226" r="10" opacity="0.78"/>
   </g>
 </svg>
