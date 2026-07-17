@@ -45,6 +45,11 @@ python app.py
 
 Foolproof does **not** silently install PowerShell modules, change execution policy, or automatically accept Windows updates.
 
+Notes:
+
+- The Cancel button is best-effort. It stops the process Foolproof launched, but Windows tools may leave their own child/background work running.
+- If PSWindowsUpdate is not installed, the Windows Update fallback asks `UsoClient.exe` to start a scan asynchronously, so the app may report that request as complete before Windows finishes scanning.
+
 ## Build a Windows EXE
 
 ```powershell

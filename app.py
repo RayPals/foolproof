@@ -11,6 +11,7 @@ import logging
 import os
 import subprocess
 import sys
+from shlex import quote
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -26,7 +27,23 @@ class MaintenanceTask:
     command: list[str]
     requires_admin: bool = True
     timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS
-    shell: bool = False
+
+
+def is_packaged() -> bool:
+    return bool(getattr(sys, "frozen", False))
+
+
+def resource_path(relative_path: str) -> Path:
+    """Resolve bundled assets both from source and from a PyInstaller EXE."""
+    base = Path(getattr(sys, "_MEIPASS", Path(__file__).parent))
+    return base / relative_path
+
+
+def format_command(command: list[str]) -> str:
+    """Return a copy/paste-friendly command preview with quoted arguments."""
+    if is_windows():
+        return subprocess.list2cmdline(command)
+    return " ".join(quote(part) for part in command)
 
 
 def is_windows() -> bool:
@@ -173,7 +190,7 @@ class MaintenanceRunner:
                 yield self.log(f"Skipped: {task.name} requires Administrator privileges.")
                 continue
 
-            command_text = " ".join(task.command)
+            command_text = format_command(task.command)
             if self.dry_run:
                 yield self.log(f"DRY RUN: {command_text}")
                 continue
@@ -184,7 +201,7 @@ class MaintenanceRunner:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
-                    shell=task.shell,
+                    shell=False,
                 )
                 stdout, stderr = self.current_process.communicate(timeout=task.timeout_seconds)
                 if stdout.strip():
@@ -255,7 +272,7 @@ def run_gui() -> int:
             self.worker: Optional[MaintenanceThread] = None
             self.setWindowTitle(APP_NAME)
             self.setGeometry(100, 100, 680, 500)
-            icon_path = Path(__file__).parent / "assets" / "foolproof-logo.png"
+            icon_path = resource_path("assets/foolproof-logo.png")
             if icon_path.exists():
                 self.setWindowIcon(QIcon(str(icon_path)))
 

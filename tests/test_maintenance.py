@@ -15,7 +15,6 @@ def test_build_tasks_uses_pyqt6_safe_subprocess_commands(monkeypatch):
         "Run Disk Cleanup",
         "Run antivirus scan",
     ]
-    assert all(task.shell is False for task in tasks)
     assert tasks[0].command[:4] == ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass"]
     assert "Install-Module" not in " ".join(tasks[0].command)
     assert "Set-ExecutionPolicy" not in " ".join(tasks[0].command)
@@ -56,3 +55,14 @@ def test_requires_admin_gate(monkeypatch, tmp_path):
     messages = list(runner.run_tasks())
 
     assert any("Administrator" in msg for msg in messages)
+
+
+def test_command_preview_quotes_paths_with_spaces(monkeypatch):
+    monkeypatch.setattr(app, "is_windows", lambda: True)
+    preview = app.format_command([r"C:\Program Files\Windows Defender\MpCmdRun.exe", "-Scan"])
+    assert r'"C:\Program Files\Windows Defender\MpCmdRun.exe"' in preview
+
+
+def test_resource_path_supports_pyinstaller_bundle(monkeypatch, tmp_path):
+    monkeypatch.setattr(app.sys, "_MEIPASS", str(tmp_path), raising=False)
+    assert app.resource_path("assets/foolproof-logo.png") == tmp_path / "assets/foolproof-logo.png"
