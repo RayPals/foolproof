@@ -1,0 +1,88 @@
+name: Build WinUI 3 app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [winui3-redesign]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Install and test the maintenance engine
+        shell: pwsh
+        run: |
+          python -m pip install -r requirements-dev.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m pytest -q
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Bundle the existing Python engine without Qt
+        shell: pwsh
+        run: |
+          python -m PyInstaller --noconfirm --clean --onefile --console --name Foolproof.Worker --exclude-module PyQt6 --distpath worker-dist worker.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Publish self-contained native WinUI app
+        shell: pwsh
+        run: |
+          dotnet publish windows/Foolproof.WinUI/Foolproof.WinUI.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true -o native-dist/Foolproof
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Force native-dist/Foolproof/backend | Out-Null
+          Copy-Item worker-dist/Foolproof.Worker.exe native-dist/Foolproof/backend/
+          Copy-Item windows/README.md native-dist/Foolproof/README.txt
+      - name: Test real native controls and bundled worker; render previews
+        shell: pwsh
+        run: |
+          $output = "$PWD/native-smoke"
+          New-Item -ItemType Directory -Force $output | Out-Null
+          $app = Start-Process -FilePath "$PWD/native-dist/Foolproof/Foolproof.exe" -ArgumentList @('--smoke-test', "`"$output`"") -PassThru
+          try {
+            if (-not $app.WaitForExit(120000)) { throw 'Native UI smoke test exceeded 120 seconds.' }
+            $resultPath = Join-Path $output 'smoke-result.json'
+            if (-not (Test-Path $resultPath)) { throw "No native smoke result was written. Process exit: $($app.ExitCode)" }
+            $result = Get-Content $resultPath -Raw | ConvertFrom-Json
+            $result | ConvertTo-Json -Depth 5 | Write-Host
+            if (-not $result.success -or $result.realMaintenanceExecuted) { throw 'Native UI smoke assertions failed.' }
+            if (-not (Test-Path (Join-Path $output 'ready.png'))) { throw 'Native rendering is missing.' }
+          } finally {
+            if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+          }
+      - name: Record source identity and package portable app
+        shell: pwsh
+        run: |
+          "Source commit: $env:GITHUB_SHA`nFramework: WinUI 3 (Windows App SDK)`nPlatform: Windows x64`nUnpackaged and self-contained. Extract the entire folder before running Foolproof.exe.`nUnsigned. Maintenance actions were not executed during CI." | Set-Content native-dist/Foolproof/BUILD-INFO.txt -Encoding utf8
+          Get-ChildItem native-dist/Foolproof -File -Recurse | Sort-Object FullName | ForEach-Object {
+            $relative = [System.IO.Path]::GetRelativePath("$PWD/native-dist/Foolproof", $_.FullName).Replace('\','/')
+            "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower())  $relative"
+          } | Set-Content native-dist/Foolproof/SHA256SUMS.txt -Encoding utf8
+          Compress-Archive -Path native-dist/Foolproof -DestinationPath Foolproof-WinUI3-Windows-x64.zip
+          "$((Get-FileHash Foolproof-WinUI3-Windows-x64.zip -Algorithm SHA256).Hash.ToLower())  Foolproof-WinUI3-Windows-x64.zip" | Set-Content SHA256SUMS.txt -Encoding utf8
+      - name: Capture native startup diagnostics on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force native-smoke | Out-Null
+          Get-WinEvent -FilterHashtable @{LogName='Application'; StartTime=(Get-Date).AddMinutes(-15)} -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -in @('.NET Runtime', 'Application Error', 'Windows Error Reporting') } | Select-Object TimeCreated, ProviderName, Message | Format-List | Out-File native-smoke/startup-diagnostics.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Foolproof-WinUI3-Windows-x64
+          path: |
+            Foolproof-WinUI3-Windows-x64.zip
+            SHA256SUMS.txt
+            native-smoke/
+          if-no-files-found: warn
+          retention-days: 14
