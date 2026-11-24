@@ -33,6 +33,9 @@ def test_native_ui_keeps_preview_default_and_hides_advanced_controls():
     file = NATIVE / 'MainWindow.xaml'
     assert file.exists(), 'Native main screen must exist'
     root = ET.parse(file).getroot()
+    scroll = next(e for e in root.iter() if e.tag.endswith('ScrollViewer'))
+    assert scroll.get('HorizontalContentAlignment') == 'Stretch'
+    assert scroll.get('HorizontalScrollMode') == 'Disabled'
     named = {e.get('{'+XAML['x']+'}Name'): e for e in root.iter()}
     assert named['PreviewToggle'].get('IsOn') == 'True'
     assert named['OptionsExpander'].get('IsExpanded') == 'False'

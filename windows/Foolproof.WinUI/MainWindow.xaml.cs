@@ -294,6 +294,11 @@ public sealed partial class MainWindow : Window
             Check(CancelButton.Visibility == Visibility.Collapsed && StartButton.IsEnabled, "Idle controls");
             Check(LogText.IsReadOnly, "Log is read-only");
             Check((string)StartButton.Content == "Preview maintenance", "Clear primary preview action");
+            foreach (var element in new FrameworkElement[] { PageContent, StartButton, UpdateStatus, DriveStatus, CleanupStatus, ScanStatus })
+            {
+                var position = element.TransformToVisual(Root).TransformPoint(new Windows.Foundation.Point(0, 0));
+                Check(position.X >= -1 && position.X + element.ActualWidth <= Root.ActualWidth + 1, "No horizontal clipping: " + element.Name);
+            }
             await SnapshotAsync("ready.png");
             currentRun = RunAsync();
             Check(!OptionsExpander.IsEnabled && !PreviewToggle.IsEnabled && !StartButton.IsEnabled, "Options stay disabled during a run");
