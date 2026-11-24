@@ -116,6 +116,23 @@ def test_failed_runner_creation_leaves_start_enabled(monkeypatch, qt_app):
     open_window(monkeypatch, qt_app, action)
 
 
+def test_log_preserves_quotes_ampersands_entities_and_tags(monkeypatch, qt_app):
+    lines = [
+        'DRY RUN: powershell -Command "$x=\'Continue\'; Write-Output \'hello\'"',
+        'DRY RUN: "C:\\Program Files\\Windows Defender\\MpCmdRun.exe" -Scan',
+        'literal &quot; &#x27; & <b>tag</b>',
+        'line one\nline two',
+        '    spaces\tand a tab',
+    ]
+
+    def action(window):
+        for line in lines:
+            window.append_log(line)
+        assert window.log_textbox.toPlainText() == '\n'.join(lines)
+
+    open_window(monkeypatch, qt_app, action)
+
+
 def test_dry_run_completes_and_displays_output_as_plain_text(monkeypatch, qt_app, tmp_path):
     monkeypatch.setattr(app, 'get_log_path', lambda: tmp_path / 'gui.log')
     monkeypatch.setattr(app, 'build_maintenance_tasks', lambda **kw: [

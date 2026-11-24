@@ -288,7 +288,7 @@ def relaunch_as_admin() -> bool:
 
 def run_gui() -> int:
     from PyQt6.QtCore import QThread, pyqtSignal
-    from PyQt6.QtGui import QIcon
+    from PyQt6.QtGui import QIcon, QTextCursor
     from PyQt6.QtWidgets import (
         QApplication,
         QCheckBox,
@@ -398,10 +398,15 @@ def run_gui() -> int:
             self.worker.start()
 
         def append_log(self, message: str) -> None:
-            # QTextEdit.append auto-detects HTML even when rich-text input is
-            # disabled. External command output must always remain literal.
-            from html import escape
-            self.log_textbox.append(escape(message).replace("\n", "<br>"))
+            # Insert plain text directly: append() guesses whether a string is
+            # HTML, so escaped quotes in otherwise plain commands stay encoded.
+            cursor = self.log_textbox.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.End)
+            if not self.log_textbox.document().isEmpty():
+                cursor.insertBlock()
+            cursor.insertText(message)
+            self.log_textbox.setTextCursor(cursor)
+            self.log_textbox.ensureCursorVisible()
 
         def relaunch(self) -> None:
             if relaunch_as_admin():

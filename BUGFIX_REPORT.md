@@ -13,7 +13,7 @@ This report describes the bug-fix changes relative to that baseline.
 - **Undecodable command output converted successful tasks into errors.** Text decoding now replaces invalid bytes instead of aborting capture.
 - **Each maintenance run leaked its file logging handler.** The run generator closes and removes handlers in a finally block.
 - **Administrator relaunch had incorrect argument handling and ignored failure.** Frozen executables now exclude argv[0] from their parameters, source script paths are absolute, Windows quoting uses list2cmdline, ShellExecute errors are checked, and a failed/cancelled relaunch is shown in the UI. The original window closes only on a successful relaunch request.
-- **Command output was interpreted as HTML by QTextEdit.append.** Logs are escaped so literal tags and command arguments remain visible, rather than being silently reformatted or hidden.
+- **Command output was interpreted as HTML by QTextEdit.append.** Logs now use QTextCursor.insertText so literal tags, entities, quotes, whitespace, and command arguments remain unchanged. The initial escaping-based fix was insufficient: commands without HTML tags displayed `&quot;` and `&#x27;` literally. A follow-up exact-text regression reproduced that bug before the plain-text insertion fix; the Linux suite now passes 23 tests.
 
 ## Verification
 
