@@ -105,7 +105,7 @@ public sealed partial class MainWindow : Window
     {
         busy = value;
         StartButton.IsEnabled = !value;
-        SettingsPanel.IsEnabled = !value;
+        OptionsExpander.IsEnabled = !value;
         PreviewToggle.IsEnabled = !value;
         CancelButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
         CancelButton.IsEnabled = value;
@@ -183,7 +183,7 @@ public sealed partial class MainWindow : Window
             worker?.Dispose();
             worker = null;
             SetBusy(false);
-            if (closePending) AppWindow.Close();
+            if (closePending) Close();
         }
     }
 
@@ -261,7 +261,7 @@ public sealed partial class MainWindow : Window
         {
             var start = new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = true, Verb = "runas", WorkingDirectory = AppContext.BaseDirectory };
             using var elevated = Process.Start(start);
-            if (elevated is not null) AppWindow.Close();
+            if (elevated is not null) Close();
         }
         catch (Win32Exception) { ResultText.Text = "Administrator access wasn't granted. No maintenance started."; }
     }
@@ -296,6 +296,7 @@ public sealed partial class MainWindow : Window
             Check((string)StartButton.Content == "Preview maintenance", "Clear primary preview action");
             await SnapshotAsync("ready.png");
             currentRun = RunAsync();
+            Check(!OptionsExpander.IsEnabled && !PreviewToggle.IsEnabled && !StartButton.IsEnabled, "Options stay disabled during a run");
             await currentRun;
             Check(completeReceived && lastPreview && lastFailed == 0, "Real bundled worker preview succeeds");
             Check(plannedTasks == 4 && taskLabels.Values.All(label => label.Text == "Previewed"), "Four task statuses reach previewed");
