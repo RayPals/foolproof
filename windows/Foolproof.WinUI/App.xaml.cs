@@ -39,7 +39,14 @@ public partial class App : Application
             var folder = index >= 0 && index + 1 < args.Length ? Path.GetFullPath(args[index + 1]) :
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Foolproof", "logs");
             Directory.CreateDirectory(folder);
-            File.WriteAllText(Path.Combine(folder, "startup-error.txt"), message + Environment.NewLine + exception);
+            var details = new StringBuilder(message + Environment.NewLine + exception);
+            for (Exception? current = exception; current is not null; current = current.InnerException)
+            {
+                details.AppendLine($"\nHRESULT: 0x{current.HResult:X8}");
+                foreach (System.Collections.DictionaryEntry item in current.Data)
+                    if (item.Value is string value) details.AppendLine($"{item.Key}: {value}");
+            }
+            File.WriteAllText(Path.Combine(folder, "startup-error.txt"), details.ToString());
             File.WriteAllText(Path.Combine(folder, "xaml-resources.txt"), resourceErrors.ToString());
             if (index >= 0)
                 File.WriteAllText(Path.Combine(folder, "smoke-result.json"), JsonSerializer.Serialize(new { success = false, checks = 0, error = exception.ToString(), message, realMaintenanceExecuted = false }));
