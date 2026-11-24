@@ -37,6 +37,7 @@ def test_dry_run_records_without_executing(monkeypatch, tmp_path):
         raise AssertionError("subprocess.run should not be called in dry-run mode")
 
     monkeypatch.setattr(app.subprocess, "run", fake_run)
+    monkeypatch.setattr(app.subprocess, "Popen", fake_run)
     log_path = tmp_path / "foolproof.log"
     task = app.MaintenanceTask("Example", ["cmd", "/c", "echo", "hello"])
     runner = app.MaintenanceRunner([task], dry_run=True, log_path=log_path, require_admin=False)

@@ -11,6 +11,7 @@ import logging
 import os
 import subprocess
 import sys
+import time
 from shlex import quote
 from dataclasses import dataclass
 from datetime import datetime
@@ -167,16 +168,46 @@ class MaintenanceRunner:
         return logger
 
     def cancel(self) -> None:
+        # Only the worker owns process teardown. The GUI must never block here,
+        # and a cancellation arriving during Popen must not be lost.
         self.cancelled = True
-        if self.current_process and self.current_process.poll() is None:
-            self.current_process.terminate()
+
+    def _stop_process(self) -> None:
+        process = self.current_process
+        if process is None:
+            return
+        try:
+            if process.poll() is None:
+                process.terminate()
+            try:
+                process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                process.kill()
+                process.wait()
+        finally:
+            for pipe in (process.stdout, process.stderr):
+                if pipe is not None:
+                    pipe.close()
+            self.current_process = None
 
     def log(self, message: str) -> str:
         self.logger.info(message)
         return f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {message}"
 
     def run_tasks(self) -> Generator[str, None, None]:
+        try:
+            yield from self._run_tasks()
+        finally:
+            self._stop_process()
+            for handler in self.logger.handlers[:]:
+                handler.close()
+                self.logger.removeHandler(handler)
+
+    def _run_tasks(self) -> Generator[str, None, None]:
         yield self.log(f"Maintenance started. Log file: {self.log_path}")
+        if not self.dry_run and not is_windows():
+            yield self.log("Unavailable: maintenance commands only run on Windows.")
+            return
         if self.dry_run:
             yield self.log("DRY RUN is enabled; commands will be shown but not executed.")
 
@@ -201,9 +232,24 @@ class MaintenanceRunner:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                     text=True,
+                    errors="replace",
                     shell=False,
                 )
-                stdout, stderr = self.current_process.communicate(timeout=task.timeout_seconds)
+                deadline = time.monotonic() + task.timeout_seconds
+                stdout = stderr = ""
+                while not self.cancelled:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise subprocess.TimeoutExpired(task.command, task.timeout_seconds)
+                    try:
+                        stdout, stderr = self.current_process.communicate(timeout=min(0.1, remaining))
+                        break
+                    except subprocess.TimeoutExpired:
+                        continue
+                if self.cancelled:
+                    self._stop_process()
+                    yield self.log(f"Cancelled: {task.name}")
+                    break
                 if stdout.strip():
                     yield self.log(stdout.strip())
                 if stderr.strip():
@@ -214,22 +260,30 @@ class MaintenanceRunner:
                     yield self.log(f"Failed: {task.name} exited with code {self.current_process.returncode}")
             except subprocess.TimeoutExpired:
                 self.cancel()
+                self._stop_process()
                 yield self.log(f"Timed out: {task.name}")
             except FileNotFoundError as exc:
                 yield self.log(f"Unavailable: {task.name} ({exc})")
             except Exception as exc:
                 yield self.log(f"Error: {task.name} ({exc})")
             finally:
-                self.current_process = None
+                self._stop_process()
 
         yield self.log("Maintenance finished.")
 
 
-def relaunch_as_admin() -> None:
+def relaunch_as_admin() -> bool:
     if not is_windows():
-        return
-    params = " ".join([f'"{arg}"' for arg in sys.argv])
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)  # type: ignore[attr-defined]
+        return False
+    # Frozen executables already include the entry point; source launches need
+    # the script path as the first argument to the Python interpreter.
+    args = sys.argv[1:] if is_packaged() else [str(Path(sys.argv[0]).resolve()), *sys.argv[1:]]
+    params = subprocess.list2cmdline(args)
+    try:
+        result = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)  # type: ignore[attr-defined]
+        return result > 32
+    except (OSError, AttributeError):
+        return False
 
 
 def run_gui() -> int:
@@ -248,7 +302,6 @@ def run_gui() -> int:
 
     class MaintenanceThread(QThread):
         log_signal = pyqtSignal(str)
-        finished_signal = pyqtSignal()
 
         def __init__(self, *, dry_run: bool, include_updates: bool, full_scan: bool) -> None:
             super().__init__()
@@ -259,9 +312,11 @@ def run_gui() -> int:
             )
 
         def run(self) -> None:
-            for message in self.runner.run_tasks():
-                self.log_signal.emit(message)
-            self.finished_signal.emit()
+            try:
+                for message in self.runner.run_tasks():
+                    self.log_signal.emit(message)
+            except Exception as exc:
+                self.log_signal.emit(f"Maintenance error: {exc}")
 
         def cancel(self) -> None:
             self.runner.cancel()
@@ -270,6 +325,7 @@ def run_gui() -> int:
         def __init__(self) -> None:
             super().__init__()
             self.worker: Optional[MaintenanceThread] = None
+            self.close_when_finished = False
             self.setWindowTitle(APP_NAME)
             self.setGeometry(100, 100, 680, 500)
             icon_path = resource_path("assets/foolproof-logo.png")
@@ -279,6 +335,7 @@ def run_gui() -> int:
             self.status_label = QLabel(self._status_text())
             self.log_textbox = QTextEdit()
             self.log_textbox.setReadOnly(True)
+            self.log_textbox.setAcceptRichText(False)
 
             self.dry_run_box = QCheckBox("Dry run (show commands only)")
             self.dry_run_box.setChecked(True)
@@ -293,7 +350,7 @@ def run_gui() -> int:
             self.cancel_button.setEnabled(False)
             self.cancel_button.clicked.connect(self.cancel_maintenance)
             self.admin_button = QPushButton("Relaunch as Administrator")
-            self.admin_button.clicked.connect(relaunch_as_admin)
+            self.admin_button.clicked.connect(self.relaunch)
             self.admin_button.setEnabled(is_windows() and not is_admin())
 
             options = QVBoxLayout()
@@ -321,16 +378,36 @@ def run_gui() -> int:
             return "Not running as Administrator. Privileged tasks will be skipped unless you relaunch elevated."
 
         def start_maintenance(self) -> None:
+            if self.worker and self.worker.isRunning():
+                return
+            try:
+                worker = MaintenanceThread(
+                    dry_run=self.dry_run_box.isChecked(),
+                    include_updates=self.updates_box.isChecked(),
+                    full_scan=self.full_scan_box.isChecked(),
+                )
+            except Exception as exc:
+                self.append_log(f"Unable to start maintenance: {exc}")
+                return
             self.start_button.setEnabled(False)
             self.cancel_button.setEnabled(True)
-            self.worker = MaintenanceThread(
-                dry_run=self.dry_run_box.isChecked(),
-                include_updates=self.updates_box.isChecked(),
-                full_scan=self.full_scan_box.isChecked(),
-            )
-            self.worker.log_signal.connect(self.log_textbox.append)
-            self.worker.finished_signal.connect(self.on_finished)
+            self.admin_button.setEnabled(False)
+            self.worker = worker
+            self.worker.log_signal.connect(self.append_log)
+            self.worker.finished.connect(self.on_finished)
             self.worker.start()
+
+        def append_log(self, message: str) -> None:
+            # QTextEdit.append auto-detects HTML even when rich-text input is
+            # disabled. External command output must always remain literal.
+            from html import escape
+            self.log_textbox.append(escape(message).replace("\n", "<br>"))
+
+        def relaunch(self) -> None:
+            if relaunch_as_admin():
+                self.close()
+            else:
+                self.append_log("Administrator relaunch failed or was cancelled.")
 
         def cancel_maintenance(self) -> None:
             if self.worker:
@@ -340,6 +417,20 @@ def run_gui() -> int:
         def on_finished(self) -> None:
             self.start_button.setEnabled(True)
             self.cancel_button.setEnabled(False)
+            self.admin_button.setEnabled(is_windows() and not is_admin())
+            if self.worker:
+                self.worker.deleteLater()
+                self.worker = None
+            if self.close_when_finished:
+                self.close()
+
+        def closeEvent(self, event) -> None:
+            if self.worker and self.worker.isRunning():
+                self.close_when_finished = True
+                self.cancel_maintenance()
+                event.ignore()
+                return
+            event.accept()
 
     qt_app = QApplication(sys.argv)
     window = MaintenanceApp()
