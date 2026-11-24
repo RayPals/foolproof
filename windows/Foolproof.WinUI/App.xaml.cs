@@ -1,14 +1,18 @@
 using Microsoft.UI.Xaml;
 using System.Text.Json;
+using System.Text;
 
 namespace Foolproof.Native;
 
 public partial class App : Application
 {
     private Window? window;
+    private static readonly StringBuilder resourceErrors = new();
     public App()
     {
         UnhandledException += (_, args) => ReportStartupError(args.Exception, args.Message);
+        DebugSettings.IsXamlResourceReferenceTracingEnabled = true;
+        DebugSettings.XamlResourceReferenceFailed += (_, args) => resourceErrors.AppendLine(args.Message);
         try { InitializeComponent(); }
         catch (Exception ex) { ReportStartupError(ex, ex.Message); throw; }
     }
@@ -36,6 +40,7 @@ public partial class App : Application
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Foolproof", "logs");
             Directory.CreateDirectory(folder);
             File.WriteAllText(Path.Combine(folder, "startup-error.txt"), message + Environment.NewLine + exception);
+            File.WriteAllText(Path.Combine(folder, "xaml-resources.txt"), resourceErrors.ToString());
             if (index >= 0)
                 File.WriteAllText(Path.Combine(folder, "smoke-result.json"), JsonSerializer.Serialize(new { success = false, checks = 0, error = exception.ToString(), message, realMaintenanceExecuted = false }));
         }
