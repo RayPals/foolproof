@@ -1,0 +1,67 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install -r requirements-dev.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Run regression tests
+        shell: pwsh
+        run: |
+          python -m pytest -q
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m py_compile app.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build Windows executable
+        shell: pwsh
+        run: |
+          python -m PyInstaller --noconfirm --clean --onefile --windowed --name Foolproof --icon assets/foolproof-logo.ico --add-data "assets/foolproof-logo.png;assets" app.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Smoke test packaged application
+        shell: pwsh
+        run: |
+          $app = Start-Process -FilePath "$PWD/dist/Foolproof.exe" -PassThru
+          try {
+            Start-Sleep -Seconds 8
+            $app.Refresh()
+            if ($app.HasExited) { throw "Packaged app exited unexpectedly: $($app.ExitCode)" }
+            Write-Host 'Packaged application remained running for 8 seconds (offscreen, dry-run defaults).'
+          } finally {
+            if (-not $app.HasExited) {
+              Stop-Process -Id $app.Id -Force
+              $app.WaitForExit()
+            }
+          }
+      - name: Record build identity and checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash dist/Foolproof.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  Foolproof.exe" | Set-Content dist/SHA256SUMS.txt -Encoding utf8
+          "Source commit: $env:GITHUB_SHA`nPlatform: Windows x64`nPython: $(python --version)`nUnsigned executable. Windows maintenance actions were not executed." | Set-Content dist/BUILD-INFO.txt -Encoding utf8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Foolproof-Windows-x64
+          path: |
+            dist/Foolproof.exe
+            dist/SHA256SUMS.txt
+            dist/BUILD-INFO.txt
+          if-no-files-found: error
+          retention-days: 14
