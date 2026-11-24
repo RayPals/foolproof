@@ -42,6 +42,13 @@ public sealed partial class MainWindow : Window
         if (smokeIndex >= 0 && smokeIndex + 1 < args.Length)
             smokeDirectory = Path.GetFullPath(args[smokeIndex + 1]);
         InitializeComponent();
+        // Bound the scroll content to the actual client area, not the
+        // ScrollViewer's unconstrained desired width during window resize.
+        Root.SizeChanged += (_, sizeArgs) =>
+        {
+            Viewport.Width = sizeArgs.NewSize.Width;
+            PageContent.Width = Math.Min(660, sizeArgs.NewSize.Width);
+        };
         SystemBackdrop = new MicaBackdrop();
         AppWindow.Resize(new SizeInt32(760, 900));
         var icon = Path.Combine(AppContext.BaseDirectory, "Assets", "foolproof-logo.ico");
@@ -294,12 +301,13 @@ public sealed partial class MainWindow : Window
             Check(CancelButton.Visibility == Visibility.Collapsed && StartButton.IsEnabled, "Idle controls");
             Check(LogText.IsReadOnly, "Log is read-only");
             Check((string)StartButton.Content == "Preview maintenance", "Clear primary preview action");
+            Root.UpdateLayout();
+            await SnapshotAsync("ready.png");
             foreach (var element in new FrameworkElement[] { PageContent, StartButton, UpdateStatus, DriveStatus, CleanupStatus, ScanStatus })
             {
                 var position = element.TransformToVisual(Root).TransformPoint(new Windows.Foundation.Point(0, 0));
-                Check(position.X >= -1 && position.X + element.ActualWidth <= Root.ActualWidth + 1, "No horizontal clipping: " + element.Name);
+                Check(position.X >= -1 && position.X + element.ActualWidth <= Root.ActualWidth + 1, $"No horizontal clipping: {element.Name}, x={position.X}, width={element.ActualWidth}, root={Root.ActualWidth}, viewport={Viewport.ActualWidth}");
             }
-            await SnapshotAsync("ready.png");
             currentRun = RunAsync();
             Check(!OptionsExpander.IsEnabled && !PreviewToggle.IsEnabled && !StartButton.IsEnabled, "Options stay disabled during a run");
             await currentRun;
