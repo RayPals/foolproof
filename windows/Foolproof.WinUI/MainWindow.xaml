@@ -1,0 +1,91 @@
+<Window
+    x:Class="Foolproof.Native.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Foolproof">
+    <Grid x:Name="Root" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel MaxWidth="660" HorizontalAlignment="Stretch" Padding="32,24,32,28" Spacing="22">
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="44"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <Image Source="ms-appx:///Assets/foolproof-logo.png" Width="44" Height="44" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Foolproof" FontSize="20" FontWeight="SemiBold" />
+                        <TextBlock Text="A little care for your PC." FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" Text="WINUI 3" FontSize="10" CharacterSpacing="100" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Grid>
+
+                <StackPanel Spacing="8" Margin="0,4,0,0">
+                    <TextBlock x:Name="Headline" Text="Ready when you are." FontSize="30" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock x:Name="Summary" Text="Four simple steps to help keep Windows in good shape." FontSize="14" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="18,6">
+                    <StackPanel>
+                        <Grid Padding="0,13" ColumnSpacing="14">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="28"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE895;" FontSize="21" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" Spacing="3"><TextBlock Text="Windows updates" FontWeight="SemiBold"/><TextBlock Text="Check for updates. Nothing installs automatically." FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/></StackPanel>
+                            <TextBlock x:Name="UpdateStatus" Grid.Column="2" Text="Ready" FontSize="12" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </Grid>
+                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
+                        <Grid Padding="0,13" ColumnSpacing="14">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="28"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xEDA2;" FontSize="21" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Spacing="3"><TextBlock Text="Drive optimization" FontWeight="SemiBold"/><TextBlock Text="Let Windows choose the right care for your drive." FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/></StackPanel>
+                            <TextBlock x:Name="DriveStatus" Grid.Column="2" Text="Ready" FontSize="12" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </Grid>
+                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
+                        <Grid Padding="0,13" ColumnSpacing="14">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="28"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE74D;" FontSize="21" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Spacing="3"><TextBlock Text="Temporary files" FontWeight="SemiBold"/><TextBlock Text="Free up space with Windows Disk Cleanup." FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/></StackPanel>
+                            <TextBlock x:Name="CleanupStatus" Grid.Column="2" Text="Ready" FontSize="12" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </Grid>
+                        <Border Height="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
+                        <Grid Padding="0,13" ColumnSpacing="14">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="28"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xEA18;" FontSize="21" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Spacing="3"><TextBlock Text="Virus scan" FontWeight="SemiBold"/><TextBlock x:Name="ScanDescription" Text="A quick check with Microsoft Defender." FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/></StackPanel>
+                            <TextBlock x:Name="ScanStatus" Grid.Column="2" Text="Ready" FontSize="12" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                    <StackPanel Spacing="4" VerticalAlignment="Center"><TextBlock Text="Preview only" FontWeight="SemiBold"/><TextBlock x:Name="PreviewDescription" Text="See the steps without changing your PC." FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/></StackPanel>
+                    <ToggleSwitch x:Name="PreviewToggle" Grid.Column="1" IsOn="True" OnContent="" OffContent="" Toggled="Preview_Toggled" AutomationProperties.Name="Preview only" VerticalAlignment="Center"/>
+                </Grid>
+
+                <StackPanel Spacing="10">
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <Button x:Name="StartButton" Content="Preview maintenance" Click="Start_Click" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch" Height="44" AutomationProperties.AutomationId="StartMaintenance"/>
+                        <Button x:Name="CancelButton" Grid.Column="1" Content="Cancel" Click="Cancel_Click" Visibility="Collapsed" Height="44"/>
+                    </Grid>
+                    <ProgressBar x:Name="RunProgress" IsIndeterminate="False" Visibility="Collapsed"/>
+                    <TextBlock x:Name="ResultText" Text="You're in control. No changes in preview mode." FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <StackPanel x:Name="SettingsPanel" Spacing="10">
+                    <Expander x:Name="OptionsExpander" Header="Options" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="10">
+                            <CheckBox x:Name="UpdatesCheck" Content="Check Windows updates" IsChecked="True"/>
+                            <CheckBox x:Name="FullScanCheck" Content="Use a full virus scan (takes longer)" IsChecked="False" Checked="FullScan_Changed" Unchecked="FullScan_Changed"/>
+                            <TextBlock x:Name="AdminText" Text="" FontSize="12" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                            <Button x:Name="AdminButton" Content="Run as administrator" Click="Admin_Click"/>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+                <Expander x:Name="DetailsExpander" Header="Activity log" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <StackPanel Spacing="10">
+                        <TextBox x:Name="LogText" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" FontFamily="Consolas" FontSize="11" Height="180" PlaceholderText="Your activity will appear here." AutomationProperties.Name="Maintenance activity log"/>
+                        <Button Content="Open log folder" Click="OpenLog_Click"/>
+                    </StackPanel>
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>
