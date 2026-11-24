@@ -20,6 +20,15 @@ def test_native_ui_uses_winui_and_bundles_its_runtime():
         assert tuple(map(int, tools.get('Version').split('.'))) >= (10, 0, 26100, 4654)
 
 
+def test_native_publish_includes_the_application_resource_index():
+    root = ET.parse(NATIVE / 'Foolproof.WinUI.csproj').getroot()
+    target = root.find(".//Target[@Name='PublishAppResourceIndex']")
+    assert target is not None, 'Unpackaged publish must explicitly include its app PRI (WindowsAppSDK #6720)'
+    item = target.find('.//ResolvedFileToPublish')
+    assert item is not None and item.get('Include') == '$(ProjectPriFullPath)'
+    assert item.findtext('RelativePath') == '$(ProjectPriFileName)'
+
+
 def test_native_ui_keeps_preview_default_and_hides_advanced_controls():
     file = NATIVE / 'MainWindow.xaml'
     assert file.exists(), 'Native main screen must exist'

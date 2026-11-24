@@ -8,9 +8,15 @@
 
 It is intentionally conservative: it starts in **Dry run** mode, shows what it will do, and skips privileged actions unless it is running as Administrator.
 
+## Windows interface
+
+The [native WinUI 3 edition](windows/README.md) provides a simpler home screen, one primary action, per-step status, and collapsed options/activity log. It reuses the tested maintenance engine. Download its self-contained portable ZIP from the **Build WinUI 3 app** workflow, extract the entire folder, and open `Foolproof.exe`.
+
+The original PyQt6 edition remains available below as a fallback; its single-file EXE build is unchanged.
+
 ## Features
 
-- PyQt6 desktop UI
+- Native WinUI 3 frontend plus the original PyQt6 fallback
 - Dry-run mode by default
 - Checks Windows Update status without auto-installing updates
 - Optimizes the system drive using Windows `defrag /O`

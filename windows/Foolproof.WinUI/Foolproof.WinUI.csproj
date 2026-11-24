@@ -26,4 +26,14 @@
     <Content Include="../../assets/foolproof-logo.ico" Link="Assets/foolproof-logo.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
+  <!-- Unpackaged WindowsAppSDK publishing omits the app PRI without this
+       explicit item wiring: microsoft/WindowsAppSDK#6720. -->
+  <Target Name="PublishAppResourceIndex" BeforeTargets="ComputeResolvedFilesToPublishList" DependsOnTargets="$(GenerateProjectPriFile)">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(ProjectPriFullPath)" Condition="Exists('$(ProjectPriFullPath)')">
+        <RelativePath>$(ProjectPriFileName)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 </Project>

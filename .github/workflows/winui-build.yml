@@ -40,6 +40,10 @@ jobs:
         run: |
           dotnet publish windows/Foolproof.WinUI/Foolproof.WinUI.csproj -c Release -r win-x64 -p:Platform=x64 --self-contained true -o native-dist/Foolproof
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Force native-smoke | Out-Null
+          Get-ChildItem native-dist/Foolproof -Recurse -File | Select-Object FullName,Length | Format-Table -AutoSize | Out-File native-smoke/publish-files.txt -Width 300
+          $appPri = Get-ChildItem native-dist/Foolproof -File | Where-Object { $_.Name -in @('Foolproof.pri', 'resources.pri') }
+          if (-not $appPri) { throw 'The published app is missing its own XAML resource index.' }
           New-Item -ItemType Directory -Force native-dist/Foolproof/backend | Out-Null
           Copy-Item worker-dist/Foolproof.Worker.exe native-dist/Foolproof/backend/
           Copy-Item windows/README.md native-dist/Foolproof/README.txt
